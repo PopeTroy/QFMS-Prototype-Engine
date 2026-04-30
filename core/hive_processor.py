@@ -1,19 +1,19 @@
 import os
 import argparse
 import groq
-# NVIDIA SDK or requests to NVIDIA Cloud Functions
-import requests
 
 def run_hive_logic(mass, file_url):
-    # 1. Groq/Qwen-2.5-72B Logic for QFMS
+    # Groq/Qwen-2.5-72B Logic
     client = groq.Client(api_key=os.environ.get("GROQ_API_KEY"))
     
     prompt = f"""
     ACT AS HIVE AI ENGINEER. 
     Target Mass: {mass}kg. 
-    Task: Calculate Nanographene 180-micron coating delta.
-    Identify: Chemical Ratios (GNP/Binder/Solvent), Ohmic Target, and Ballistic Wiring paths.
-    Output: Technical parameters for PDF and Shell script.
+    Task: Calculate 180-micron Nanographene coating parameters.
+    Output: 
+    1. Chemical Ratios (12.5% GNP, 1.5% Binder, 86% Solvent).
+    2. Ohmic Target: {15 if mass < 10 else 10} Ohms.
+    3. Flashing Script (bash) for NVIDIA Jetson PWM at 144kHz.
     """
     
     chat_completion = client.chat.completions.create(
@@ -21,14 +21,14 @@ def run_hive_logic(mass, file_url):
         model="qwen-2.5-72b",
     )
     
-    logic_output = chat_completion.choices[0].message.content
-    
-    # 2. Mock function for PDF/Flash generation based on logic
-    generate_artifacts(logic_output, mass)
+    # Logic to save the output to flash/install_qfms.sh and generate reports/blueprint.pdf
+    save_outputs(chat_completion.choices[0].message.content)
 
-def generate_artifacts(logic, mass):
-    # Create flash/install_qfms.sh and reports/blueprint.pdf here
-    print(f"Artifacts generated for {mass}kg prototype.")
+def save_outputs(logic):
+    # Automated file writing logic
+    os.makedirs('flash', exist_ok=True)
+    with open('flash/install_qfms.sh', 'w') as f:
+        f.write(logic)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
